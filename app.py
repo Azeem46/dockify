@@ -1,6 +1,3 @@
-# Telegram Document Upload Validation Bot
-# Complete setup with PostgreSQL integration - FIXED VERSION
-
 import os
 import re
 import uuid
@@ -16,8 +13,7 @@ import asyncio
 import secrets
 import math
 
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
 import PyPDF2
 import openpyxl
 from docx import Document
@@ -26,7 +22,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 
 # Configuration
 BOT_TOKEN = "7762458211:AAFje7GdkLu59nA1sWErKFM2SLgHxgDRVOs"
-DATABASE_URL = "postgresql://postgres:root@localhost:5432/telegram_bot_db"
+DATABASE_URL = "postgresql://telegram_bot_db_9dil_user:8JtT9fVDVn1aJEITQ8gjctZrG59CNl9L@dpg-d1hsedffte5s73aq4jq0-a.oregon-postgres.render.com/telegram_bot_db_9dil"
 TEMP_DIR = "temp_uploads"
 BASE_STORAGE_PATH = r"C:\_BMC Project\Survey Data"
 NETWORK_STORAGE_PATH = r"\\synology\PFEPL_BOT_TEST"
@@ -60,7 +56,7 @@ class DatabaseManager:
         self.init_database()
     
     def get_connection(self):
-        return psycopg2.connect(self.db_url)
+        return psycopg.connect(self.db_url)
     
     def init_database(self):
         """Create necessary tables"""
@@ -183,7 +179,7 @@ class DatabaseManager:
     
     def get_manager_users(self, manager_id: int) -> List[Dict]:
         with self.get_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 cur.execute("""
                     SELECT * FROM users 
                     WHERE manager_id = %s
@@ -192,7 +188,7 @@ class DatabaseManager:
     
     def get_pending_requests(self, manager_id: int) -> List[Dict]:
         with self.get_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 cur.execute("""
                     SELECT ur.*, u.username, u.first_name 
                     FROM user_requests ur
@@ -431,7 +427,7 @@ class TelegramBot:
         
         # Check if user is approved
         with self.db.get_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 cur.execute("""
                     SELECT u.*, ur.status as request_status
                     FROM users u
@@ -1256,7 +1252,7 @@ Use /cancel to cancel this session.
         
         # Get request details
         with self.db.get_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 cur.execute("""
                     SELECT ur.*, u.username, u.first_name, u.telegram_id
                     FROM user_requests ur
@@ -1311,7 +1307,7 @@ Use /cancel to cancel this session.
         
         # Get request details
         with self.db.get_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 cur.execute("""
                     SELECT ur.*, u.username, u.first_name, u.telegram_id
                     FROM user_requests ur
@@ -1378,7 +1374,7 @@ Use /cancel to cancel this session.
     async def check_user_access(self, user_id: int) -> bool:
         """Check if user has access to use the bot"""
         with self.db.get_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 cur.execute("""
                     SELECT u.*, ur.status as request_status
                     FROM users u
@@ -1413,7 +1409,7 @@ Use /cancel to cancel this session.
         # Create web app button
         keyboard = [[InlineKeyboardButton(
             "View History",
-            web_app=WebAppInfo(url="https://9159-203-123-38-102.ngrok-free.app/")
+            web_app=WebAppInfo(url="https://2756-203-123-38-102.ngrok-free.app/")
         )]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -1454,9 +1450,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-    
