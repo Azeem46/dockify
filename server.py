@@ -2,17 +2,17 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 from datetime import datetime
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
 
 app = Flask(__name__, static_folder='webapp')
 CORS(app)  # Enable CORS for all routes
 
 # Database configuration
-DATABASE_URL = "postgresql://postgres:root@localhost:5432/telegram_bot_db"
+DATABASE_URL = "postgresql://telegram_bot_db_9dil_user:8JtT9fVDVn1aJEITQ8gjctZrG59CNl9L@dpg-d1hsedffte5s73aq4jq0-a.oregon-postgres.render.com/telegram_bot_db_9dil"
+
 
 def get_db_connection():
-    return psycopg2.connect(DATABASE_URL)
+    return psycopg.connect(DATABASE_URL)
 
 def init_database():
     """Initialize database tables"""
@@ -89,7 +89,7 @@ def get_history():
             return jsonify({'error': 'User information not provided'}), 400
 
         conn = get_db_connection()
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             # First, get user's role from database
             cur.execute("""
                 SELECT role, first_name, manager_id 
