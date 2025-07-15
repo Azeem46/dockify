@@ -77,6 +77,7 @@ def upload_file():
 
 @app.route('/api/history', methods=['GET'])
 def get_history():
+    conn = None
     try:
         # Get user info from request headers
         user_id = request.headers.get('X-User-ID')
@@ -204,7 +205,8 @@ def get_history():
         print(f"Traceback: {traceback.format_exc()}")
         return jsonify({'error': str(e)}), 500
     finally:
-        conn.close()
+        if conn is not None:
+            conn.close()
         print("\n=== Request Complete ===\n")
 
 if __name__ == '__main__':
